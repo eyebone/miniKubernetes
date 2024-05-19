@@ -1,0 +1,87 @@
+syntax = "proto3";
+
+package share;
+
+option go_package = "minik8s/pkg/proto";
+
+message HelloRequest {
+  string name = 1;
+}
+
+message HelloResponse {
+  string reply = 1;
+}
+
+// Pod
+message ApplyPodRequest {
+  bytes data = 1;
+}
+
+message DeletePodRequest {
+  bytes data = 1;
+}
+
+message GetPodRequest {
+  string PodName = 1;
+}
+
+message GetPodResponse {
+  bytes PodData = 1;
+}
+
+message StatusResponse {
+  int32 status = 1;
+}
+
+message RegisterNodeRequest{
+  string NodeName = 1;
+  string NodeIp = 2;
+  string kubelet_url = 3;
+}
+
+message UpdatePodStatusRequest {
+  bytes data = 1;
+}
+
+// Deployment
+message ApplyDeploymentRequest{
+  bytes data = 1;
+}
+
+message GetDeploymentRequest{
+  string DeploymentName = 1;
+}
+
+message DeleteDeploymentRequest{
+  string DeploymentName = 1;
+}
+
+message GetDeploymentResponse{
+  bytes data = 1;
+}
+
+// service
+message ApplyServiceRequest{
+  bytes data = 1;
+}
+
+message GetServiceRequest{
+  string ServiceName = 1;
+}
+
+message DeleteServiceRequest{
+  string ServiceName = 1;
+}
+
+message GetServiceResponse{
+  bytes data = 1;
+}
+
+// Node
+message GetNodeRequest{
+  string NodeName = 1;
+}
+
+message GetNodeResponse{
+  bytes NodeData = 1;
+}
