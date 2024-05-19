@@ -1,0 +1,3 @@
+welcome to kubectl!
+    kubectl apply -f config.yaml # create relative pod
+happy, happy, happy~

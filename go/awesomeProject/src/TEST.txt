@@ -1,0 +1,108 @@
+package main
+
+import (
+	"context"
+	"fmt"
+	clientv3 "go.etcd.io/etcd/client/v3"
+	"log"
+	"time"
+)
+
+// 表示对 etcd 的增删改查操作的接口
+type EtcdClient interface {
+	Put(key, value string) error
+	Get(key string) (string, error)
+	Delete(key string) error
+	Update(key, value string) error
+}
+
+// 实现 `EtcdClient` 接口的结构体
+type MyEtcdClient struct {
+	Client *clientv3.Client
+}
+
+func (ec *MyEtcdClient) Put(key, value string) error {
+	_, err := ec.Client.Put(context.Background(), key, value)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (ec *MyEtcdClient) Get(key string) (string, error) {
+	resp, err := ec.Client.Get(context.Background(), key)
+	if err != nil {
+		return "", err
+	}
+	if len(resp.Kvs) == 0 {
+		return "", fmt.Errorf("key not found")
+	}
+	return string(resp.Kvs[0].Value), nil
+}
+
+func (ec *MyEtcdClient) Delete(key string) error {
+	_, err := ec.Client.Delete(context.Background(), key)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (ec *MyEtcdClient) Update(key, value string) error {
+	_, err := ec.Client.Put(context.Background(), key, value)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func main() {
+	/*使用clientv3创建客户端*/
+	cli, err := clientv3.New(clientv3.Config{
+		Endpoints:   []string{"localhost:2379", "localhost:22379", "localhost:32379"},
+		DialTimeout: 5 * time.Second,
+	})
+	if err != nil {
+		// handle error!
+		fmt.Printf("connect to etcd failed, err:%v\n", err)
+		log.Fatal(err)
+		return
+	}
+	defer cli.Close() // 在函数结束前关闭客户端
+
+	fmt.Println("connected to etcd success")
+
+	// 创建 MyEtcdClient 实例
+	myEtcdClient := &MyEtcdClient{Client: cli}
+
+	// 使用该实例进行操作
+	key := "cxtkey"
+	value := "cxtvalue"
+
+	err = myEtcdClient.Put(key, value)
+	fmt.Printf("Putting key '%s' with value '%s'\n", key, value)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	val, err := myEtcdClient.Get(key)
+	fmt.Printf("Getting key '%s'\n", key)
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println("Get: ", val)
+
+	err = myEtcdClient.Delete(key)
+	fmt.Printf("Deleting key '%s'\n", key)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Println("updating key '%s'\n", key)
+	err = myEtcdClient.Update(key, "this is lyf")
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println("updating success")
+	fmt.Println("Operation completed successfully")
+}
