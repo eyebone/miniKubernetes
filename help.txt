@@ -1,0 +1,19 @@
+cd D:\GO\myProj\src\k8s
+
+# 构建项目
+go build main.go
+
+# 启动Pod
+.\minik8s start example-pod.yaml
+
+# 获取Pod状态
+.\minik8s get example-pod.yaml
+
+# 描述Pod
+.\minik8s describe example-pod.yaml
+
+# 停止Pod
+.\minik8s stop example-pod.yaml
+
+# 移除Pod
+.\minik8s remove example-pod.yaml
