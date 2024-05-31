@@ -1,0 +1,16 @@
+kind: pod
+metadata:
+  name: pod3
+spec:
+  volumes:
+    - name: shared-data
+      hostPath:
+        path: /mnt/d/go/myProj/src/new_k8s
+  containers:
+    - name: debian-container
+      image: debian
+      volumeMounts:
+        name: shared-data
+        mountPath: /mnt/d/go/myProj/src/new_k8s
+#      command: ["/bin/sh"]
+#      args: ["-c", "touch /mnt/d/go/myProj/src/new_k8s/my.html & echo Hello from the debian container > /mnt/d/go/myProj/src/new_k8s/my.html"]

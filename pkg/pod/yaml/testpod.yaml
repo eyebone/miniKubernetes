@@ -1,0 +1,27 @@
+kind: pod
+metadata:
+  name: my-pod
+spec:
+  containers:
+    - name: my-server
+      image: my-http-server:v1.0
+      ports:
+        - containerPort: 6800
+          hostPort: 6800
+      command: ['sh']
+      volumeMounts:
+        name: volume
+        mountPath: /usr/local
+      resources:
+        limits:
+          memory: 200
+          cpu: 700
+  volumes: #定义一组挂载设备
+    - name:  volume #定义一个挂载设备的名字
+      #emptyDir: {}
+      hostPath:
+        path: /mnt/d/SE  #挂载设备类型为hostPath，路径为宿主机下的,这里设备类型支持很多种
+
+
+
+

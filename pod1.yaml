@@ -1,0 +1,27 @@
+kind: Pod
+metadata:
+  name: example-pod
+spec:
+  containers:
+    - name: nginx
+      image: nginx:stable-alpine
+      resources:
+        limits:
+          cpu: "1000M" # 1 CPU core
+          memory: "128Mi" # 128 MB
+      ports:
+        - containerPort: 8088
+        - hostPort: 8088
+    - name: ubuntu
+      image: ubuntu:latest
+      resources:
+        limits:
+          cpu: "500m" # 0.5 CPU core
+          memory: "64Mi" # 64 MB
+      ports:
+        - containerPort: 9090
+        - hostPort: 9090
+  volumes:
+    - name: example-volume
+      hostPath:
+        path: D:\GO\myProj\src\new_k8s
