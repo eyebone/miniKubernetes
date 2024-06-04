@@ -19,31 +19,31 @@ import (
 )
 
 type Container struct {
-	Name        string      `yaml:"name"`
-	Image       string      `yaml:"image"`
-	Ports       []Port      `yaml:"ports"`
-	VolumeMount VolumeMount `yaml:"volumeMounts"`
-	Command     []string    `yaml:"command"`
-	Args        []string    `yaml:"args""`
-	Resources   Resources   `yaml:"resources"`
+	Name        string      `yaml:"name" json:"name"`
+	Image       string      `yaml:"image" json:"image"`
+	Ports       []Port      `yaml:"ports" json:"ports"`
+	VolumeMount VolumeMount `yaml:"volumeMounts" json:"volumeMounts"`
+	Command     []string    `yaml:"command" json:"command"`
+	Args        []string    `yaml:"args" json:"args"`
+	Resources   Resources   `yaml:"resources" json:"resources"`
 	Status      string
 }
 
 type Resources struct {
 	Limits struct {
-		Memory string `yaml:"memory"`
-		CPU    string `yaml:"cpu"`
+		Memory string `yaml:"memory" json:"memory"`
+		CPU    string `yaml:"cpu" json:"cpu"`
 	}
 }
 
 type Port struct {
-	ContainerPort int `yaml:"containerPort"`
-	HostPort      int `yaml:"hostPort"`
+	ContainerPort int `yaml:"containerPort" json:"container_port"`
+	HostPort      int `yaml:"hostPort" json:"host_port"`
 }
 
 type VolumeMount struct {
-	Name      string `yaml:"name"`
-	MountPath string `yaml:"mountPath"`
+	Name      string `yaml:"name" json:"name"`
+	MountPath string `yaml:"mountPath" json:"mountPath"`
 }
 
 func NewContainer() *Container {

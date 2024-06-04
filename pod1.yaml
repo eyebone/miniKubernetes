@@ -1,27 +1,30 @@
-kind: Pod
+kind: pod
 metadata:
-  name: example-pod
+  name: pod3
 spec:
+  volumes:
+    - name: shared-data
+      hostPath:
+        path: /mnt/d/go/myProj/src/new_k8s
   containers:
-    - name: nginx
-      image: nginx:stable-alpine
-      resources:
-        limits:
-          cpu: "1000M" # 1 CPU core
-          memory: "128Mi" # 128 MB
+
+    - name: nginx-container
+      image: nginx
       ports:
         - containerPort: 8088
-        - hostPort: 8088
-    - name: ubuntu
-      image: ubuntu:latest
+          hostPort: 8088
+      volumeMounts:
+        name: shared-data
+        mountPath: /usr/share/nginx/html
       resources:
         limits:
-          cpu: "500m" # 0.5 CPU core
-          memory: "64Mi" # 64 MB
-      ports:
-        - containerPort: 9090
-        - hostPort: 9090
-  volumes:
-    - name: example-volume
-      hostPath:
-        path: D:\GO\myProj\src\new_k8s
+          memory: 200
+          cpu: 700
+
+    - name: my-ubuntu
+      image: ubuntu:latest
+      volumeMounts:
+        name: shared-data
+        mountPath: /mnt/d/go/myProj/src/new_k8s
+#      command: ["/bin/sh"]
+#      args: ["-c", "touch /mnt/d/go/myProj/src/new_k8s/my.html & echo Hello from the debian container > /mnt/d/go/myProj/src/new_k8s/my.html"]
