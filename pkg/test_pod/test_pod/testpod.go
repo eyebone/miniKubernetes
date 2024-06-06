@@ -5,10 +5,9 @@ import (
 	"fmt"
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
-	"new_k8s/etcd"
 	"new_k8s/pkg/container"
-	"strconv"
-	"strings"
+	"new_k8s/pkg/test_pod/random"
+	"new_k8s/tools/etcd/etcd"
 	"time"
 )
 
@@ -29,13 +28,15 @@ type Pod struct {
 		Metadata Metadata `yaml:"metadata" json:"metadata"`
 		Spec     Spec     `yaml:"spec" json:"spec"`
 	}
-	StartTime      time.Time            `json:"StartTime"`
-	PodPhase       PodPhase             `json:"PodPhase"`
-	PauseContainer *container.Container `json:"PauseContainer"`
+	StartTime      time.Time            `json:"StartTime" yaml:"StartTime"`
+	PodPhase       PodPhase             `json:"PodPhase" yaml:"PodPhase"`
+	PauseContainer *container.Container `json:"PauseContainer" yaml:"PauseContainer"`
+	PodIP          string               `json:"PodIP" yaml:"PodIP"`
 }
 
 type Metadata struct {
 	Name string `yaml:"name" json:"name"`
+	Uid  string `yaml:"uid,omitempty" json:"uid,omitempty"`
 }
 
 type Spec struct {
@@ -52,11 +53,13 @@ type HostPath struct {
 	Path string `yaml:"path" json:"path"`
 }
 
-func NewPod(yamlFilePath string, etcdclient etcd.MyEtcdClient) (Pod, string, error) {
+// 创建和初试化一个新的pod
+// 状态为pending
+func NewPod(yamlFilePath string, etcdclient etcd.MyEtcdClient) (Pod, error) {
 	// 读取 YAML 文件
 	data, err := ioutil.ReadFile(yamlFilePath)
 	if err != nil {
-		return Pod{PodPhase: Unknown}, "error new pod", fmt.Errorf("Error reading YAML file %s: %v", yamlFilePath, err)
+		return Pod{PodPhase: Unknown}, fmt.Errorf("Error reading YAML file %s: %v", yamlFilePath, err)
 	}
 
 	// 解析 YAML 文件
@@ -66,8 +69,11 @@ func NewPod(yamlFilePath string, etcdclient etcd.MyEtcdClient) (Pod, string, err
 	}
 	err = yaml.Unmarshal(data, &pod.Configs)
 	if err != nil {
-		return Pod{PodPhase: Unknown}, "error parsing yaml", fmt.Errorf("Error parsing YAML file %s: %v", yamlFilePath, err)
+		return Pod{PodPhase: Unknown}, fmt.Errorf("Error parsing YAML file %s: %v", yamlFilePath, err)
 	}
+
+	// 设定pod的唯一UID
+	pod.Configs.Metadata.Uid = random.GenerateXid()
 
 	for _, c := range pod.Configs.Spec.Containers {
 		var cont container.Container
@@ -101,16 +107,7 @@ func NewPod(yamlFilePath string, etcdclient etcd.MyEtcdClient) (Pod, string, err
 	// pause container
 	pod.PauseContainer = container.NewContainer()
 	pod.PauseContainer.Image = PauseImage
-
-	return pod, pod.Configs.Metadata.Name, nil
-}
-
-func parseCPU(cpu string) (int, error) {
-	value, err := strconv.Atoi(strings.TrimSuffix(cpu, "m"))
-	return value, err
-}
-
-func parseMemory(memory string) (int, error) {
-	value, err := strconv.Atoi(strings.TrimSuffix(memory, "Mi"))
-	return value, err
+	// pod ip
+	pod.PodIP = ""
+	return pod, nil
 }

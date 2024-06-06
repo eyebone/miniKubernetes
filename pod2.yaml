@@ -1,0 +1,23 @@
+kind: pod
+metadata:
+  name: mypod2
+spec:
+  volumes:
+    - name: my-volume
+      hostPath:
+        path: /mnt/d/SE/2024_spring/k8s
+
+  containers:
+    - name: viewer
+      image: nginx:stable-alpine
+      ports:
+        - containerPort: 80
+          hostPort: 8888
+      volumeMounts:
+        name: my-volume
+        mountPath: /usr/share/nginx/html/files
+    - name: my-debian
+      image: debian
+      volumeMounts:
+        name: my-volume
+        mountPath: /mnt/d/go/myProj/src/new_k8s

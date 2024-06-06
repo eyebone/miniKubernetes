@@ -6,15 +6,16 @@ require (
 	github.com/docker/docker v26.1.3+incompatible
 	github.com/docker/go-connections v0.5.0
 	github.com/google/cadvisor v0.49.1
+	github.com/rs/xid v1.5.0
 	go.etcd.io/etcd/client/v3 v3.5.14
 	gopkg.in/yaml.v2 v2.4.0
 )
 
 require (
-	github.com/Microsoft/go-winio v0.4.15 // indirect
+	github.com/Microsoft/go-winio v0.6.2 // indirect
 	github.com/containerd/log v0.1.0 // indirect
 	github.com/coreos/go-semver v0.3.1 // indirect
-	github.com/coreos/go-systemd/v22 v22.3.2 // indirect
+	github.com/coreos/go-systemd/v22 v22.5.0 // indirect
 	github.com/distribution/reference v0.6.0 // indirect
 	github.com/docker/go-units v0.5.0 // indirect
 	github.com/felixge/httpsnoop v1.0.4 // indirect
@@ -46,5 +47,5 @@ require (
 	google.golang.org/grpc v1.64.0 // indirect
 	google.golang.org/protobuf v1.34.1 // indirect
 	gotest.tools/v3 v3.5.1 // indirect
-	k8s.io/klog/v2 v2.100.1 // indirect
+	k8s.io/klog/v2 v2.120.1 // indirect
 )

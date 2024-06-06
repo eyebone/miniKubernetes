@@ -4,8 +4,9 @@ import (
 	"context"
 	"fmt"
 	"github.com/docker/docker/client"
-	"new_k8s/etcd"
+	"gopkg.in/yaml.v2"
 	"new_k8s/pkg/container"
+	"new_k8s/tools/etcd/etcd"
 	"time"
 )
 
@@ -17,14 +18,25 @@ func (pod *Pod) Start(ctx context.Context, cli *etcd.MyEtcdClient) {
 	pod.PauseContainer.Name = pauseName
 	if pod.PauseContainer == nil {
 		fmt.Printf("this is pod start func and pause container is nil\n")
-	} else {
-		fmt.Printf("start pod func pause not nil\n")
 	}
 	if err != nil {
 		fmt.Printf("create pause container err:%v", err)
 	}
-	fmt.Printf("pause container create succeed! containerID: ", pauseID, "containerName: ", pauseName)
-
+	fmt.Printf("pause container create succeed! pause containerID: ", pauseID, "containerName: ", pauseName)
+	// Create and Start Common Container
+	dockercli, _ := client.NewClientWithOpts(
+		client.FromEnv,
+		client.WithAPIVersionNegotiation(),
+	)
+	defer dockercli.Close()
+	containerJSON, err := dockercli.ContainerInspect(context.Background(), pauseID)
+	if err != nil {
+		panic(err)
+	} else {
+		containerIP := containerJSON.NetworkSettings.IPAddress
+		fmt.Println("PAUSE containerIP: %v\n", containerIP)
+		pod.PodIP = containerIP
+	}
 	pauseMode := "container:" + pauseID
 	allContainersRunning := true
 
@@ -54,7 +66,6 @@ func (pod *Pod) Start(ctx context.Context, cli *etcd.MyEtcdClient) {
 		cont.Ports = pod.Configs.Spec.Containers[i].Ports
 
 		ID, contName, err := container.CreateContainer(&pod.Configs.Spec.Containers[i], pauseMode, volumeBinds)
-		fmt.Printf("hello.im lujyifan.\n")
 
 		if err != nil {
 			fmt.Printf("Failed to create container: %v\n", err)
@@ -144,13 +155,31 @@ func (pod *Pod) Remove(ctx context.Context, cli *client.Client) error {
 	return nil
 }
 
-func (p *Pod) DisplayStatus() {
-	for _, c := range p.Configs.Spec.Containers {
-		fmt.Printf("Container %s is currently %s.\n", c.Name, c.Status)
-	}
-	fmt.Printf("Pod Name: %s\n", p.Configs.Metadata.Name)
-	fmt.Printf("Pod Status: %s\n", p.PodPhase)
-	p.DisplayRunTime()
+func (p *Pod) DisplayStatus(pm *PodManager) {
+	/**
+	podname   podPhase  runTime   podIP   node
+	*/
+	//for _, c := range p.Configs.Spec.Containers {
+	//	fmt.Printf("Container %s is currently %s.\n", c.Name, c.Status)
+	//}
+	//fmt.Printf("Pod Name: %s\n", p.Configs.Metadata.Name)
+	//fmt.Printf("Pod Status: %s\n", p.PodPhase)
+	//p.DisplayRunTime()
+	//for podName, pod := range pods {
+	//	fmt.Println("Pod Name:", podName)
+	//	fmt.Printf("Pod Pointer: %p\n", pod)
+	//	fmt.Println("Containers:")
+	//	for _, container := range pod.Containers {
+	//		fmt.Println("\t", container.Name)
+	//	}
+	//	fmt.Println("=====================")
+	//}
+	//for podName, pod := range pm.pods {
+	//	duration := time.Since(pod.StartTime)
+	//	fmt.Println(podName, "         ", "%s", pod.PodPhase, "         ", duration.Truncate(time.Second), "%s\n", pod.podIP)
+	//}
+	duration := time.Since(p.StartTime)
+	fmt.Printf("%s            %s            %s             %s\n", p.Configs.Metadata.Name, p.PodPhase, duration.Truncate(time.Second), p.PodIP)
 }
 
 func (p *Pod) DisplayRunTime() {
@@ -160,4 +189,14 @@ func (p *Pod) DisplayRunTime() {
 		duration := time.Since(p.StartTime)
 		fmt.Printf("Pod %s has been running for %s.\n", p.Configs.Metadata.Name, duration.Truncate(time.Second))
 	}
+}
+
+func (p *Pod) DescribePod() {
+	data, err := yaml.Marshal(p.Configs)
+	if err != nil {
+		fmt.Printf("Error: %v\n", err)
+		return
+	}
+	fmt.Println(string(data))
+	fmt.Printf("\n")
 }

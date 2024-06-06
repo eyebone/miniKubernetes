@@ -64,13 +64,12 @@ package main
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"github.com/docker/docker/client"
 	clientv3 "go.etcd.io/etcd/client/v3"
 	"log"
-	"new_k8s/etcd"
 	test_pod2 "new_k8s/pkg/test_pod/test_pod"
+	"new_k8s/tools/etcd/etcd"
 	"os"
 	"os/exec"
 	"sync"
@@ -106,7 +105,7 @@ func main() {
 	}
 	defer cliEtcd.Close()
 
-	fmt.Println("Connected to etcd successfully!\n")
+	//fmt.Println("Connected to etcd successfully!\n")
 	// 创建 etcd 客户端
 	etcdClient := &etcd.MyEtcdClient{Client: cliEtcd}
 
@@ -137,51 +136,37 @@ func main() {
 		podManager.StopPod(ctx, cli, arg)
 	case "get":
 		fmt.Printf("======get pod status:======\n")
-		podManager.DisplayPodStatus(arg)
+
+		// NOTE: 此处data为 `[]string` 类型，里面为所有pod的Uid
+		data := etcd.GetPodPrefixKeys()
+		podManager.GetPod(data, etcdClient)
+	case "describe":
+		podManager.DescribePod(arg, etcdClient)
+	case "delete":
+		podManager.RemovePod(ctx, cli, etcdClient, arg)
 	}
 
 }
 
 func getFilePath(arg string) string {
 	// 打印接收到的命令行参数
-	fmt.Printf("Received file parameter: %s\n", arg)
+	//fmt.Printf("Received file parameter: %s\n", arg)
 	// 打印当前工作目录
 	wd, err := os.Getwd()
 	if err != nil {
 		log.Fatalf("Error getting current working directory: %v", err)
 	}
-	fmt.Printf("Current working directory: %s\n", wd)
+	//fmt.Printf("Current working directory: %s\n", wd)
 	newFileName := wd + arg
 	return newFileName
 }
 
 func handleStartCmd(ctx context.Context, cli *client.Client, etcdClient *etcd.MyEtcdClient, newFileName string, podManager test_pod2.PodManager) {
 	fmt.Printf("=====starting to create a new pod========\n")
-	p, podName, err := test_pod2.NewPod(newFileName, *etcdClient)
-	if err != nil {
-		log.Fatalf("Failed to create pod: %v", err)
-	}
-	// 打印解析后的结构体
-	// 这里是可以正确解析的！
-	//fmt.Printf("Parsed Pod from file %s: %+v\n", newFileName, p)
-	// 状态标记为Pending
-	p.PodPhase = test_pod2.Pending
-
-	//写入Pod元数据信息到etcd
-	podKey := fmt.Sprintf("pods/%s", podName)
-	fmt.Printf("fisrt putting in main.go, podKey: %s\n", podKey)
-	podData, err := json.Marshal(p)
-	if err != nil {
-		log.Fatalf("Failed to marshal pod data: %v", err)
-	} else {
-		//fmt.Printf("main.go start pod: json marshal pod data: \n")
-		//fmt.Printf("%s\n", podData)
-	}
-	if err := etcdClient.Put(podKey, string(podData)); err != nil {
-		log.Fatalf("Failed to write pod data to etcd: %v", err)
-	}
+	// TODO: 之后要改，这个逻辑应该要在pm中
+	podUid := podManager.CreateNewPod(ctx, etcdClient, newFileName)
 	// 调用podManager 的startPod方法
-	podManager.StartPod(ctx, etcdClient, podName)
+	podManager.StartPod(ctx, etcdClient, podUid)
 }
 
 //func loadExistingPods(pm *test_pod2.PodManager, cli *etcd.MyEtcdClient) {

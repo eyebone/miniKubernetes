@@ -7,7 +7,6 @@ spec:
       hostPath:
         path: /mnt/d/go/myProj/src/new_k8s
   containers:
-
     - name: nginx-container
       image: nginx
       ports:

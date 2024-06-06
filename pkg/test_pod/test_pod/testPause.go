@@ -7,7 +7,7 @@ import (
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/client"
 	"github.com/docker/go-connections/nat"
-	"new_k8s/etcd" // 导入etcd包
+	"new_k8s/tools/etcd/etcd"
 	"regexp"
 )
 
@@ -58,13 +58,12 @@ func createPause(pod *Pod, etcdClient etcd.MyEtcdClient) (string, string, error)
 	defer cli.Close()
 
 	// 生成有效的 pause 容器名称
-	pauseContainerName := fmt.Sprintf("%s-pause", pod.Configs.Metadata.Name)
+	pauseContainerName := fmt.Sprintf("%s-pauseContainer", pod.Configs.Metadata.Name)
 	// 确保生成的容器名称符合 Docker 的命名规则
 	re := regexp.MustCompile(`[a-zA-Z0-9][a-zA-Z0-9_.-]*`)
 	if !re.MatchString(pauseContainerName) || pauseContainerName == "" {
 		return "", "", fmt.Errorf("invalid container name: %s", pauseContainerName)
 	}
-	fmt.Println("pause container name: ", pauseContainerName, "\n")
 
 	configOptions := &container.Config{
 		Image:        PauseImage,
@@ -103,7 +102,7 @@ func createPause(pod *Pod, etcdClient etcd.MyEtcdClient) (string, string, error)
 	}
 
 	// 将 Pause 容器元数据写入 etcd
-	key := fmt.Sprintf("pods/%s/pause", pod.Configs.Metadata.Name)
+	key := fmt.Sprintf("pod-pausecontainers/%s", pod.Configs.Metadata.Name)
 	if err := etcdClient.Put(key, string(pauseMetaData)); err != nil {
 		return "", "", fmt.Errorf("failed to write pause container metadata to etcd: %w", err)
 	}
