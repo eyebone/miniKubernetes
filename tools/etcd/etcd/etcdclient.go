@@ -29,7 +29,7 @@ func (ec *MyEtcdClient) Put(key, value string) error {
 	if err != nil {
 		return err
 	}
-	fmt.Println("Put operation completed successfully", key, value)
+	//fmt.Println("Put operation completed successfully", key, value)
 	return nil
 }
 
@@ -41,7 +41,7 @@ func (ec *MyEtcdClient) Get(key string) (string, error) {
 	if len(resp.Kvs) == 0 {
 		return "", fmt.Errorf("key not found")
 	}
-	fmt.Println("Get operation completed successfully!\n")
+	//fmt.Println("Get operation completed successfully!\n")
 	return string(resp.Kvs[0].Value), nil
 }
 
@@ -50,7 +50,7 @@ func (ec *MyEtcdClient) Delete(key string) error {
 	if err != nil {
 		return err
 	}
-	fmt.Println("Delete operation completed successfully")
+	//fmt.Println("Delete operation completed successfully")
 	return nil
 }
 

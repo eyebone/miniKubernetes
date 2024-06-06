@@ -6,6 +6,7 @@ import (
 	"github.com/docker/docker/client"
 	"gopkg.in/yaml.v2"
 	"new_k8s/pkg/container"
+	"new_k8s/pkg/test_pod/random"
 	"new_k8s/tools/etcd/etcd"
 	"time"
 )
@@ -33,6 +34,8 @@ func (pod *Pod) Start(ctx context.Context, cli *etcd.MyEtcdClient) {
 	if err != nil {
 		panic(err)
 	} else {
+		// NOTE: 此处有修改！
+		//containerIP := containerJSON.N
 		containerIP := containerJSON.NetworkSettings.IPAddress
 		fmt.Println("PAUSE containerIP: %v\n", containerIP)
 		pod.PodIP = containerIP
@@ -51,6 +54,7 @@ func (pod *Pod) Start(ctx context.Context, cli *etcd.MyEtcdClient) {
 		err := container.EnsureImage(pod.Configs.Spec.Containers[i].Image)
 		if err != nil {
 			fmt.Printf("Failed to pull container image: %v\n", err)
+
 			allContainersRunning = false
 			continue
 		}
@@ -61,7 +65,8 @@ func (pod *Pod) Start(ctx context.Context, cli *etcd.MyEtcdClient) {
 
 		}
 		cont := container.NewContainer()
-		cont.Name = pod.Configs.Spec.Containers[i].Name
+		cont_randomID := random.GenerateXid()
+		cont.Name = pod.Configs.Spec.Containers[i].Name + cont_randomID
 		cont.Image = pod.Configs.Spec.Containers[i].Image
 		cont.Ports = pod.Configs.Spec.Containers[i].Ports
 
@@ -179,7 +184,7 @@ func (p *Pod) DisplayStatus(pm *PodManager) {
 	//	fmt.Println(podName, "         ", "%s", pod.PodPhase, "         ", duration.Truncate(time.Second), "%s\n", pod.podIP)
 	//}
 	duration := time.Since(p.StartTime)
-	fmt.Printf("%s            %s            %s             %s\n", p.Configs.Metadata.Name, p.PodPhase, duration.Truncate(time.Second), p.PodIP)
+	fmt.Printf("%s              %s            %s            %s             %s\n", p.Configs.Metadata.Uid, p.Configs.Metadata.Name, p.PodPhase, duration.Truncate(time.Second), p.PodIP)
 }
 
 func (p *Pod) DisplayRunTime() {

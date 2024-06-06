@@ -184,7 +184,7 @@ func (pm *PodManager) RemovePod(ctx context.Context, cli *client.Client, etcdCli
 func (pm *PodManager) GetPod(podUids []string, etcdClient *etcd.MyEtcdClient) error {
 	pm.mu.RLock()
 	defer pm.mu.RUnlock()
-	fmt.Printf("POD_NAME         POD_PHASE       RUN_TIME         POD_IP \n")
+	fmt.Printf("POD_ID            POD_NAME         POD_PHASE       RUN_TIME         POD_IP \n")
 
 	// 从 Etcd 获取最新的 Pod 信息
 	for i := range len(podUids) {
@@ -197,7 +197,10 @@ func (pm *PodManager) GetPod(podUids []string, etcdClient *etcd.MyEtcdClient) er
 		if err := json.Unmarshal([]byte(podData), &p); err != nil {
 			return fmt.Errorf("failed to unmarshal pod data: %v", err)
 		}
-		p.DisplayStatus(pm)
+		if p.PodPhase != Pending {
+			p.DisplayStatus(pm)
+		}
+
 	}
 
 	return nil

@@ -71,6 +71,7 @@ import (
 	test_pod2 "new_k8s/pkg/test_pod/test_pod"
 	"new_k8s/tools/etcd/etcd"
 	"os"
+
 	"os/exec"
 	"sync"
 )
@@ -126,9 +127,19 @@ func main() {
 
 	switch command {
 	case "start":
-		// 获取yaml文件路径
+
+		// NOTE: 这里是测试ip分配的部分
+		//
+		//ip, err := test_pod2.AllocateIP(etcdClient, ctx)
+		//if err != nil {
+		//	panic(err)
+		//}
+		//
+		//fmt.Printf("Allocated IP: %s\n", ip)
+		// NOTE: 这里是启动pod部分
+		//获取yaml文件路径
 		newFileName := getFilePath(arg)
-		// 处理启动pod逻辑
+		//处理启动pod逻辑
 		handleStartCmd(ctx, cli, etcdClient, newFileName, *podManager)
 
 	case "stop":

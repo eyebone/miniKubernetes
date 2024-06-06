@@ -1,6 +1,6 @@
 kind: pod
 metadata:
-  name: mypod2
+  name: mypod
 spec:
   volumes:
     - name: my-volume
